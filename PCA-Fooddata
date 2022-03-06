@@ -1,0 +1,75 @@
+install.packages("FactoMineR")
+install.packages("factoextra")
+library(FactoMineR)
+library(factoextra)
+library(readxl)
+
+Fooddata <- read_excel("Fooddata.xlsx")
+
+View(Fooddata)
+
+summary(Fooddata)
+
+round(cor(Fooddata[,2:11]),digits=2)
+
+install.packages("corrplot")  
+library(corrplot)  
+
+corrplot(cor(Fooddata[,2:11]), method = 'number')
+corrplot(cor(Fooddata[,2:11]), method = 'number',type="upper")  
+corrplot(cor(Fooddata[,2:11]), method = "circle")
+corrplot(cor(Fooddata[,2:11]), method = "ellipse",type="lower") 
+corrplot.mixed(cor(Fooddata[,2:11]), upper = "ellipse")  
+
+install.packages('Rcpp')
+library(Rcpp)
+
+res.pca = PCA(Fooddata[,2:11], scale.unit=TRUE, ncp=10, graph=T) 
+
+summary(res.pca)
+
+res.pca$eig
+res.pca$ind
+res.pca$ind$cos2
+res.pca$ind$coord
+res.pca$var
+
+fviz_screeplot(res.pca, addlabels = TRUE, ylim = c(0, 50))
+
+Fooddata.PC <- as.data.frame(res.pca$ind$coord)
+head(Fooddata.PC)
+
+dimdesc(res.pca, axes=1:2, proba=0.05)
+round(dimdesc(res.pca, axes=1:2, proba=0.05)$Dim.1$quanti,2)
+round(dimdesc(res.pca, axes=1:2, proba=0.05)$Dim.2$quanti,2)
+
+plot(res.pca,choix="ind",cex=.75)
+plot(res.pca,choix="var",cex=.75)
+
+plot(res.pca,choix="var",select="cos2 .7")
+apply(res.pca$var$cos2[,1:2],1,sum)
+plot(res.pca,choix="var",select="cos2 .5") 
+
+plot(res.pca,select="contrib 10")
+plot(res.pca,select="cos2 .5")
+
+fviz_pca_var(res.pca, col.var="contrib",   # Control variable colors using their contributions
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),  
+             repel = TRUE # Avoid text overlapping
+)
+
+fviz_contrib(res.pca, choice = "var", axes = 1, top = 10)
+
+fviz_contrib(res.pca, choice = "var", axes = 2, top = 10)
+
+fviz_pca_ind(res.pca, col.ind = "cos2",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE # Avoid text overlapping (slow if many points)
+)
+
+fviz_pca_biplot(res.pca, repel = TRUE)
+
+install.packages("pca3d")
+library(pca3d)  # for 3d plots
+
+pca3d(res.pca$ind$coord, show.labels = T)
