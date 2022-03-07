@@ -1,0 +1,113 @@
+library(tidyverse)
+library(dplyr)
+library(cluster)  
+library(factoextra)
+library(dendextend)
+library(psych)	
+ 
+fooddata <- fooddata[-1]
+rownames(fooddata) <- c("Belgium", "Denmark", "Germany", "Greece", "Spain", "France", "Ireland", "Italy", "Netherlands", "Portugal", "UK", "Austria", "Finland", "Iceland", "Norway", "Sweden"
+)
+## Warning: Setting row names on a tibble is deprecated.
+scaled.fooddata <- scale(fooddata)
+apply(fooddata,2,var)
+## 	cereals    	rice    potatoes   	sugar  vegetables    	wine
+##  222.786500	1.544958  747.922500   43.734000 3228.281958  413.511833
+##        meat    	milk  	butter    	eggs
+##  310.030958 2260.133167	5.898958	4.326000
+d <- dist(scaled.fooddata, method = "euclidean")
+
+hc <- hclust(d, method = "complete" )
+
+plot(hc, cex = 0.6, hang = -1)
+ 
+plot(as.dendrogram(hc), main = "Clusters")
+rect.hclust(hc, k=3, border=2:4)
+ 
+clusters.membership <- cutree(hc, k = 3)
+table(clusters.membership)
+## clusters.membership
+## 1 2 3
+## 5 4 7
+group.fooddata <- dplyr::mutate(as.data.frame(fooddata),clusters.membership)
+rownames(group.fooddata)<- rownames(fooddata)
+psych::describeBy(group.fooddata , group="clusters.membership")
+##
+##  Descriptive statistics by group
+## clusters.membership: 1
+##                     vars n   mean	sd median trimmed   mad  min   max range
+## cereals            	1 5  71.14  1.66   71.3   71.14  1.33 68.7  73.0   4.3
+## rice               	2 5   3.44  1.09	4.2	3.44  0.15  2.2   4.3   2.1
+## potatoes           	3 5  74.14 16.21   74.1   74.14 17.05 57.0  98.8  41.8
+## sugar              	4 5  37.64  2.46   37.1   37.64  3.56 34.1  40.4   6.3
+## vegetables         	5 5  82.64 20.26   83.1   82.64 17.64 50.0 103.2  53.2
+## wine               	6 5  32.90 18.48   22.8   32.90  2.82 20.9  64.5  43.6
+## meat               	7 5 101.78  6.77  102.0  101.78  7.12 93.4 110.5  17.1
+## milk               	8 5 107.22 26.09   98.9  107.22 28.02 80.0 145.2  65.2
+## butter             	9 5   6.38  2.11	6.9	6.38  2.97  4.1   8.9   4.8
+## eggs              	10 5  14.34  0.62   14.3   14.34  0.74 13.4  15.0   1.6
+## clusters.membership   11 5   1.00  0.00	1.0    1.00  0.00  1.0   1.0   0.0
+##                      skew kurtosis	se
+## cereals             -0.32	-1.70  0.74
+## rice                -0.29	-2.25  0.49
+## potatoes             0.40	-1.63  7.25
+## sugar               -0.23	-1.76  1.10
+## vegetables          -0.58	-1.41  9.06
+## wine                 0.87	-1.21  8.26
+## meat                 0.03	-1.91  3.03
+## milk                 0.36	-1.81 11.67
+## butter              -0.05	-2.11  0.95
+## eggs                -0.37	-1.65  0.28
+## clusters.membership   NaN      NaN  0.00
+## ------------------------------------------------------------
+## clusters.membership: 2
+##                     vars n   mean	sd median trimmed   mad   min   max range
+## cereals            	1 4  94.35 19.03  97.90   94.35 17.94  71.4 110.2  38.8
+## rice               	2 4   5.42  0.45   5.55	5.42  0.30   4.8   5.8   1.0
+## potatoes           	3 4  85.75 32.47  98.30   85.75 13.20  38.6 107.8  69.2
+## sugar              	4 4  28.52  1.45  28.65   28.52  1.56  26.8  30.0   3.2
+## vegetables         	5 4 175.78 54.53 186.80  175.78 35.29 100.0 229.5 129.5
+## wine               	6 4  46.73 16.33  50.00   46.73 13.79  25.3  61.6  36.3
+## meat    	           7 4  85.67 12.28  82.55   85.67  9.27  75.5 102.1  26.6
+## milk               	8 4  80.62 19.18  80.50   80.62 24.39  63.1  98.4  35.3
+## butter             	9 4   1.35  0.79   1.20	1.35  0.67   0.6   2.4   1.8
+## eggs              	10 4  11.35  3.11  11.20   11.35  2.67   7.7  15.3   7.6
+## clusters.membership   11 4   2.00  0.00   2.00    2.00  0.00   2.0   2.0   0.0
+##                      skew kurtosis	se
+## cereals             -0.18	-2.23  9.51
+## rice                -0.47	-1.91  0.23
+## potatoes            -0.62	-1.79 16.23
+## sugar               -0.12	-2.19  0.72
+## vegetables          -0.43	-1.83 27.26
+## wine                -0.32	-2.05  8.16
+## meat                 0.37	-2.02  6.14
+## milk                 0.00	-2.43  9.59
+## butter               0.32	-2.01  0.40
+## eggs                 0.11	-1.87  1.55
+## clusters.membership   NaN      NaN  0.00
+## ------------------------------------------------------------
+## clusters.membership: 3
+##                     vars n   mean	sd median trimmed   mad   min   max range
+## cereals            	1 7  74.04 11.77   74.3   74.04  7.41  54.6  93.4  38.8
+## rice               	2 7   3.97  1.20	4.3	3.97  1.19   1.9   5.4   3.5
+## potatoes           	3 7  83.90 33.22   73.2   83.90 20.02  50.2 151.5 101.3
+## sugar              	4 7  39.96  6.85   37.5   39.96  3.26  34.8  54.9  20.1
+## vegetables         	5 7  59.06 18.09   52.6   59.06  6.08  48.3  99.0  50.7
+## wine               	6 7   9.09  3.63   10.2	9.09  5.34   3.9  14.0  10.1
+## meat               	7 7  74.41 17.47   71.7   74.41 16.61  54.9 105.0  50.1
+## milk               	8 7 170.86 31.84  176.5  170.86 43.14 129.3 208.4  79.1
+## butter  	           9 7   4.31  1.44	4.6    4.31  1.78   2.1   5.8   3.7
+## eggs              	10 7  11.33  0.75   11.3   11.33  0.59  10.7  12.9   2.2
+## clusters.membership   11 7   3.00  0.00	3.0    3.00  0.00   3.0   3.0   0.0
+##                      skew kurtosis	se
+## cereals             -0.01	-0.88  4.45
+## rice                -0.44	-1.32  0.45
+## potatoes             1.00	-0.36 12.56
+## sugar                1.38 	0.32  2.59
+## vegetables           1.45 	0.44  6.84
+## wine                -0.07	-1.74  1.37
+## meat                 0.56	-1.29  6.60
+## milk                -0.09	-1.89 12.04
+## butter              -0.28	-1.78  0.54
+## eggs                 1.17	-0.06  0.28
+## clusters.membership   NaN      NaN  0.00
